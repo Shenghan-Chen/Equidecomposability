@@ -1,0 +1,172 @@
+<html>
+
+<head>
+
+<script type="text/javascript" src = "GLEAT/gl-matrix-min.js"></script>
+<script type="text/javascript" src="GLEAT/webgl-utils.js"></script>
+
+<script src="drawing.js"></script>
+<script src="rec2tri.js"></script>
+<script src="nasty.js"></script>
+<script src="tri.js"></script>
+<script src="cutting.js"></script>
+<script src="polygon.js"></script>
+<script src="perform.js"></script>
+<script src="range.js"></script>
+
+</head>
+
+
+
+<body>
+
+<table><tr><td>
+
+<canvas id="GLCanvas1" style="border: none;" width="800" height="600"></canvas>
+<center><h3>Canvas</h3></center>
+
+</td>
+<td>
+
+<h3>Equidecomposability</h3>
+<table>
+
+<tr><td><button type="button" onclick="selectTri1()">Draw Triangle 1</button></td></tr>
+<tr><td><button type="button" onclick="selectTri2()">Draw Triangle 2</button></td></tr>
+<tr><td><button type="button" onclick="doCut()">Do Cut</button></td></tr>
+<tr><td><button type="button" onclick="pause()">Pause/Start</button></td></tr>
+<tr><td><button type="button" onclick="testAnimate()">Auto Animation</button></td></tr>
+<tr><td><button type="button" onclick="reset()">Clear All</button></td></tr>
+<!-- <tr><td><button type="button" onclick="test()">Test</button></td></tr> -->
+
+</table>
+
+</td></tr></table>
+
+
+
+<script>
+    var glcanvas = document.getElementById("GLCanvas1");
+    glcanvas.addEventListener("contextmenu", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    }); //Need this to disable the menu that pops up on right clicking
+
+
+
+    glcanvas.getMousePos = function(evt) {
+        var rect = this.getBoundingClientRect();
+        return {
+            X: evt.clientX - rect.left,
+            Y: evt.clientY - rect.top
+        };
+    }
+
+    glcanvas.makeClick = function(e) {
+        var evt = (e == null ? event:e);
+        var mousePos = this.getMousePos(evt);
+        if (this.select == -1) return; //
+        var tri = this.triangles[this.select];
+        if (tri.length < 3) { //the number can be relaxed
+            tri.push(vec3.fromValues(mousePos.X, mousePos.Y, 0));
+            requestAnimFrame(this.repaint);
+        }
+        else {
+            console.log(mousePos.X+", "+mousePos.Y);
+        }
+    }
+    glcanvas.addEventListener('mousedown', glcanvas.makeClick);
+    glcanvas.addEventListener('touchstart', glcanvas.makeClick);
+
+    // why can't I use "this" here?
+    glcanvas.repaint = function() {
+        var ctx = glcanvas.getContext("2d");
+        ctx.clearRect(0, 0, glcanvas.width, glcanvas.height);
+
+        // if (glcanvas.debug) drawTest(ctx);// test.js
+
+        // ctx.lineCap = 'round';
+        // ctx.lineWidth = 2;
+        for (var i = 0; i < 2; i++) {
+            var tri = glcanvas.triangles[i];
+            if (tri.length == 1)
+                ctx.fillRect(tri[0][0]-1, tri[0][1]-1, 2, 2);
+            else 
+                drawPoly(ctx, [tri], 0);
+        }
+        if (glcanvas.cuts.length == 0) return;
+        drawPoly(ctx, glcanvas.cuts, glcanvas.t);
+        if (glcanvas.t < 1) {
+            glcanvas.t += 0.01; //make it global parameter
+            if (!glcanvas.paused) requestAnimFrame(glcanvas.repaint);
+        }
+        else {
+            drawPoly(ctx, glcanvas.cuts, 0);
+        }
+    }
+
+    reset();
+
+    function pause() {
+        if (glcanvas.paused) {
+            glcanvas.paused = 0;
+            requestAnimFrame(glcanvas.repaint);
+        }
+        else glcanvas.paused = 1;
+    }
+
+    function selectTri1() {
+        glcanvas.select = 0;
+    }
+
+    function selectTri2() {
+        glcanvas.select = 1;
+    }
+
+    function reset() {
+        glcanvas.paused = 0;
+        glcanvas.select = 0; //or -1??
+        glcanvas.triangles = [[],[]];
+        // glcanvas.debug = false;
+        // glcanvas.cuts1 = [];
+        // glcanvas.cuts2 = [];
+        glcanvas.cuts = [];
+        glcanvas.t = 0;
+        glcanvas.getContext("2d").clearRect(0, 0, glcanvas.width, glcanvas.height);
+    }
+
+    // Currently for testing
+    function testAnimate() {
+        reset();
+        for (var j = 0; j < 2; j++) {
+            for (var i = 0; i < 3; i++) {
+                var p = vec3.fromValues((Math.random()*0.8+0.1+j)*400, (Math.random()*0.8+0.1)*300, 0);
+                glcanvas.triangles[j].push(p);
+            }
+        }
+        doCut();
+        // requestAnimFrame(glcanvas.repaint); //may need to change/separate repaint(); re-animate?
+    }
+
+    function doCut() {
+        //for testing only!
+        var tri1 = glcanvas.triangles[0];
+        var tri2 = glcanvas.triangles[1];
+        if (tri1.length < 3) return;
+        if (tri2.length == 3) {
+            //// console.log("initial: "+tri1[0]+" "+tri1[1]+" "+tri1[2]);
+            glcanvas.cuts = cutTri2Tri(tri1, tri2);
+        }
+        requestAnimFrame(glcanvas.repaint);
+    }
+
+    // function test() {
+    //     glcanvas.debug = true;
+    //     requestAnimFrame(glcanvas.repaint);
+    // }
+
+</script>
+
+</body>
+</html>

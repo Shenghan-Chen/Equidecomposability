@@ -1,0 +1,69 @@
+BUGs found:
+
+polygon.js
+	% might be negative
+	/ might be fraction
+  rescaleCtr(poly, S)								
+	need to update fields after rescale 	delete poly.area, poly.triList;
+	ratio = Math.sqrt(S/getArea(poly));
+  getCommonWidth(tri1, tri2)
+	if (wInTri(tri[1-t], w) == null)
+n.js
+  wInTri(tri, w)
+	x = Math.sqrt(del/sqrSide)*2;
+  getK(A, B, C)
+	vec3.sub(vBC, C, B);
+  indexAbsMin(list)			
+	index = i;
+  failRange(tri)						
+	need to check all three sides			for (var i = 0; i < 3; i++)
+	del = (s/2)^2 - S 						tri.sqrSides[i]/4-area
+cutting.js
+  lineIntersection(A, B, C, D)
+	numerical precision fixed by comparing intxn with ABCD using vec3.equals()
+  lineSameSide(P, Q, poly, E)
+	numerical precision fixed by choosing largest abs
+  lineCutConvex(P, Q, poly)
+  	check if (intxn == poly[0])
+rec2tri.js
+  ctrSymm(center)
+  	180˚ rotation ≠ scale by -1
+
+
+
+TODO Tasks:
+	fix 180˚ rotation around center
+	fix norm rotation in rec2tri
+
+	CCW checking (before calling rec2tri)
+	find out orientation of minimum edge overlap
+	(a neat way to represent/select orientation?)
+
+	compute w range from k for each tri; find intersection
+	general case of w for 2 tri/trilist
+	cut/create pile of rectangles
+
+
+	delete/update/copy fields altogether?
+
+
+Extra:
+	special case: 3 piece cut
+	minimum tri to tri (parallelogram)
+	hinged sequence of tri to tri (2D?)
+	combine pieces??
+	save/load
+
+	
+
+Info to print:
+	w, n
+	area of pieces
+	del; why fail?
+
+
+
+DEBUG SYSTEMATICALLY!!!
+
+
+
