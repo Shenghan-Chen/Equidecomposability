@@ -44,6 +44,7 @@ function findRange(tri1, tri2) {
 			if (common.length > 0) return pickFromRange(common);
 		}
 		nSum++;
+		//// TODO
 	}
 }
 
