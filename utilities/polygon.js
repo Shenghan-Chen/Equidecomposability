@@ -1,6 +1,5 @@
-///UTILITIES///
 
-// alternatively, generate two polygons to have equal area?
+//// alternatively, generate two polygons to have equal area?
 function rescaleCtr(poly, S) {
 	var ctr = getCenter(poly);
 	var ratio = Math.sqrt(S/getArea(poly));
@@ -37,7 +36,7 @@ function triangularize(poly) {
 			copy.push(poly[i]);
 		var triList = [];
 		while (triList.length < l-2) {
-			var index = Math.floor(Math.random()*copy.length); //
+			var index = Math.floor(Math.random()*copy.length);////
 			var tri = [];
 			for (var i = -1; i < 2; i++)
 				tri.push(vec3.clone(copy[(index+i+copy.length)%copy.length]));
@@ -62,8 +61,3 @@ function getCenter(poly) {
 	return poly.center;
 }
 
-function movePiece(poly, move) {
-	if (move === undefined) move = poly.move;
-	for (var i = 0; i < poly.length; i++)
-		vec3.transformMat4(poly[i], poly[i], move); 
-}

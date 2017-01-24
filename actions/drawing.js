@@ -1,7 +1,4 @@
 
-// TODO: write a function to generalize (to 3D, in one place, including translation)
-// is "if (null)" better in performance??
-
 // given polygon and stage of transformation(0≤t≤1), draw it on canvas
 function drawPolygon(ctx, poly, t) {
 
@@ -79,30 +76,4 @@ function randomColor() {
         color += hex[h];
     }
     return color;
-}
-
-
-
-// deside whether a point is inside a polygon
-function insidePolygon(P, transformed) {
-    var ref = crossProduct(transformed[transformed.length-1], transformed[0], P);
-    for (var i = 0; i < transformed.length-1; i++) {
-        if (vec3.dot(ref, crossProduct(transformed[i], transformed[i+1], P)) <= 0) {
-            //// no intersection if P on the line of an edge (when crossProduct==0)
-            return false;
-        }
-    } 
-    return true;
-}
-
-
-//// Helper funtion to find the cross product of two vec3's AB and AC
-function crossProduct(A, B, C) {
-    var ab = vec3.create();
-    var ac = vec3.create();
-    var crs = vec3.create();
-    vec3.subtract(ab, B, A);
-    vec3.subtract(ac, C, A);
-    vec3.cross(crs, ab, ac);
-    return crs;
 }

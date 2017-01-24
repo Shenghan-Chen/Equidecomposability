@@ -1,4 +1,5 @@
 
+// pile up the rectangles
 function cutPoly2Poly(poly1, poly2) {
 	var cuts1 = [];
 	var cuts2 = [];
@@ -38,7 +39,7 @@ function cutPoly2Poly(poly1, poly2) {
 		}
 		var A = vec3.clone(B);A[1] += h;
 		var D = vec3.clone(A);D[0] += w;
-		var cuts = lineCutSameSide(cuts1, A, D, [], B);
+		var cuts = lineCutSameSide(cuts1, A, D, B);
 		cuts1 = cuts.oppo;
 		cuts2 = cuts2.concat(cutRec2Tri(cuts, rec, tri, oo.offset, true));
 		B[1] += h;
@@ -46,6 +47,8 @@ function cutPoly2Poly(poly1, poly2) {
 	return cuts2;
 }
 
+//// TODO
+// find the most overlapped range, to reduce pieces
 function overlapRange(triList) {
 	var total = [];
 	var possible = [{inf:-Infinity, sup:Infinity}];
@@ -93,27 +96,4 @@ function overlapRange(triList) {
 	possible = intersectionRange({inf:0, sup:possible[possible.length-1].inf}, possible);
 	console.log(possible);
 	return possible;
-}
-
-
-// apply move after original transformation
-function chainMove(cuts, move) {
-	for (var i = 0; i < cuts.length; i++)
-		mat4.mul(cuts[i].move, move, cuts[i].move);
-}
-
-function complementArray(u, a) {
-	var c = [];
-	for (var i = 0; i < u.length; i++) {
-		if (a.indexOf(u[i]) == -1)
-			c.push(u[i]);
-	}
-	return c;
-}
-
-function midPoint(A, B) {
-	var M = vec3.create();
-	vec3.add(M, A, B);
-	vec3.scale(M, M, 0.5);
-	return M;
 }

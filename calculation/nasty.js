@@ -9,9 +9,6 @@ function wInTri(tri, w) {
 	var nList = [];
 	var total = 3;
 	var fail = failRange(tri);
-
-	// for (var i = 0; i < 6; i++) console.log(printRange(getRange(tri, i, 0)));
-
 	for (var i = 0; i < fail.length; i++) {
 		if (w > fail[i].inf && w < fail[i].sup)
 			total -= 1;
@@ -20,43 +17,20 @@ function wInTri(tri, w) {
 	for (var i = 0; i < total; i++) {
 		var s2 = getSqrSide(tri, i);
 		if (w < Math.sqrt(sqrArea(tri)/s2)) {
+			// debugging
 			var del = w*w - sqrArea(tri)/s2;
-			console.log(i+"-th h/2="+Math.sqrt(sqrArea(tri)/s2)+" w="+w+" del="+del);
-			// console.log("area="+Math.sqrt(sqrArea(tri))+" s="+Math.sqrt(s2));
+			if (del > -1)
+				console.log(i+"-th h/2="+Math.sqrt(sqrArea(tri)/s2)+" w="+w+" del="+del);
 			minIndex += 2;
 			continue; //ABC,ACB taller than BAC,BCA
 		}
-		var x = Math.sqrt((w*w - sqrArea(tri)/s2)/s2)*2;
+		var x = Math.sqrt((w*w - sqrArea(tri)/s2)/s2)*2;////still possibly negative
 		nList.push(kDist(getK(tri, 2 * i), x));
 		nList.push(kDist(getK(tri, 2*i+1), x));
 	}
-	if (nList.length == 0) {console.log("failed w="+w);triInfo(tri);return null;}
+	// if (nList.length == 0) {console.log("failed w="+w);triInfo(tri);return null;}
 	minIndex += indexAbsMin(nList);
-	// console.log("order="+minIndex);
-	// if (!withinRange(w, getRange(tri, minIndex, nList[indexAbsMin(nList)]))) console.log("out of luck");
 	return {order:minIndex, offset:nList[indexAbsMin(nList)]};
-}
-
-// TODO: improve with S/w
-function findRange(tri1, tri2) {
-	var nSum = 0;
-	while (true) {
-		var pairs = absSumPairs(nSum);
-		for (var i = 0; i < pairs.length; i++) {
-			var common = commonRange(tri1, pairs[i].n1, tri2, pairs[i].n2);
-			if (common.length > 0) {
-				console.log("n1="+pairs[i].n1+" n2="+pairs[i].n2);////
-				return pickFromRange(common);//// return n?
-			}
-		}
-		nSum++;
-		//// TODO: calculate distance?
-	}
-}
-
-// return overlap of achievable ranges for offset n1 and n2
-function commonRange(tri1, n1, tri2, n2) {
-	return intersectionRange(totalRange(tri1, n1), totalRange(tri2, n2)); 
 }
 
 // return achievable range for offset n (all 6 orders)
@@ -74,12 +48,12 @@ function totalRange(tri, n) {
 	return range;
 }
 
+// [h/2, infinity) - [fail] on each side 
 function possibleRange(tri) {
-	var fail = failRange(tri);// oriented here
+	var fail = failRange(tri);
 	var range = [];
 	for (var j = 0; j < 3; j++) {
 		var halfH = Math.sqrt(sqrArea(tri)/getSqrSide(tri, j));
-
 		var possible = [{inf:halfH, sup:Infinity}];
 		if (2-j < fail.length)
 			possible = complementInterval(possible, fail[2-j]);
@@ -89,7 +63,6 @@ function possibleRange(tri) {
 }
 
 // return achievable range for specified order and offset
-// TODO: validate this
 function getRange(tri, index, n) {
 	var k = getK(tri, index) + n;
 	if (k < -1) return [];
@@ -102,8 +75,9 @@ function getRange(tri, index, n) {
 	if (k < 0) k = 0;
 	var s = Math.sqrt(aSqr*k*k/4+sqrArea(tri)/aSqr);
 
-	// s = Math.sqrt(bSqr)/2;
-	// l = Math.sqrt(aSqr/2+bSqr/2-cSqr/4);
+	// TODO: validate this
+	//// s = Math.sqrt(bSqr)/2;
+	//// l = Math.sqrt(aSqr/2+bSqr/2-cSqr/4);
 	return [{inf:s, sup:l}];
 }
 
@@ -124,27 +98,4 @@ function failRange(tri) {
 	    tri.fail = range;
 	}
 	return tri.fail;
-}
-
-// print out details of tri for debugging
-function triInfo(tri, label) {
-	console.log("triangle");
-	if (label !== undefined) console.log(label);
-	console.log(tri[0]);
-	console.log(tri[1]);
-	console.log(tri[2]);
-	var area = getArea(tri);
-	console.log("area:" + area);
-	console.log("sides:");
-	for (var i = 0; i < 3; i++) {
-		var s = Math.sqrt(getSqrSide(tri, i));
-		console.log(s+" h/2="+area/s);
-	}
-	console.log("ranges: ");
-	for (var i = 0; i < 6; i++)
-		console.log(printRange(getRange(tri, i, 0)));
-	console.log("fail ranges: "+printRange(failRange(tri)));
-	console.log("total ranges: ");
-	for (var i = -10; i < 10; i++)
-		console.log(i+" "+printRange(totalRange(tri, i)));
 }

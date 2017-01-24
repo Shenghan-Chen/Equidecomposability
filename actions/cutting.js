@@ -1,13 +1,12 @@
-// Numerical precision relies on the performance of vec3.equals()
+// Numerical precision relies on vec3.equals()
 
-// split pieces in 'cuts' with line 'PQ', ignoring pieces in 'ignore'
+// split pieces in 'cuts' with line 'PQ'
 // return list of those on the same side as 'E'
 // Note: 'cuts' is modified
-function lineCutSameSide(cuts, P, Q, ignore, E) {
+function lineCutSameSide(cuts, P, Q, E) {
     var sameSide = [];
     var oppoSide = [];
     for (var i = 0; i < cuts.length; i++) {
-        if (ignore.indexOf(cuts[i]) != -1) continue;
         var lineCut = lineCutConvex(P, Q, cuts[i]);
         if (lineCut.length == 2) {
             cuts.splice(i, 1, lineCut[0], lineCut[1]);
@@ -47,6 +46,7 @@ function lineSameSide(P, Q, poly, E) {
         if (Math.abs(prdct) > Math.abs(tmp))// numerical precision check
             tmp = prdct;
     }
+    // debugging
     if (Math.abs(tmp) < 1) {
         console.log("small abs warning: "+tmp);
         if (tmp==0) console.log("E on PQ");
@@ -79,7 +79,6 @@ function lineCutConvex(P, Q, poly) {
     }
     if (intxn.length < 2)
         return [poly];
-    // console.log("intxn ");console.log(intxn[0]);console.log(intxn[1]);
     var cut1 = createPiece(index[0], index[1], intxn[0], intxn[1], poly);
     var cut2 = createPiece(index[1], index[0], intxn[1], intxn[0], poly);
     return [cut1, cut2];

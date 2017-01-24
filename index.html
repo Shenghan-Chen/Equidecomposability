@@ -5,15 +5,22 @@
 <script type="text/javascript" src = "GLEAT/gl-matrix-min.js"></script>
 <script type="text/javascript" src="GLEAT/webgl-utils.js"></script>
 
-<script src="drawing.js"></script>
-<script src="rec2tri.js"></script>
-<script src="nasty.js"></script>
-<script src="tri.js"></script>
-<script src="cutting.js"></script>
-<script src="polygon.js"></script>
-<script src="perform.js"></script>
-<script src="range.js"></script>
-<script src="pile.js"></script>
+<script src="actions/drawing.js"></script>
+<script src="actions/cutting.js"></script>
+
+<script src="transform/core.js"></script>
+<script src="transform/rec2tri.js"></script>
+<script src="transform/tri2tri.js"></script>
+<script src="transform/poly2poly.js"></script>
+<script src="transform/move.js"></script>
+
+<script src="calculation/k.js"></script>
+<script src="calculation/nasty.js"></script>
+
+<script src="utilities/triangle.js"></script>
+<script src="utilities/polygon.js"></script>
+<script src="utilities/range.js"></script>
+<script src="utilities/helper.js"></script>
 
 </head>
 
@@ -158,8 +165,6 @@
         glcanvas.paused = 0;
         glcanvas.select = -1;
         glcanvas.polygons = [[],[]];
-        // glcanvas.cuts1 = [];
-        // glcanvas.cuts2 = [];
         glcanvas.cuts = [];
         glcanvas.t = 0;
         glcanvas.getContext("2d").clearRect(0, 0, glcanvas.width, glcanvas.height);
@@ -180,7 +185,6 @@
 
     function doCut() {
         glcanvas.select = -1;
-        //for testing only!
         changeButtonColor();
         var poly1 = glcanvas.polygons[0];
         var poly2 = glcanvas.polygons[1];
@@ -192,11 +196,6 @@
             console.log("total # pieces: "+glcanvas.cuts.length);
         requestAnimFrame(glcanvas.repaint);
     }
-
-    // function test() {
-    //     glcanvas.debug = true;
-    //     requestAnimFrame(glcanvas.repaint);
-    // }
 
 </script>
 
