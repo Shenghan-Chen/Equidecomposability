@@ -1,8 +1,6 @@
 // interval: {inf:a, sup:b} or null
 // range: list of intervals
 
-// debug(printRange(intersectionRange([{inf:a, sup:b}], [{inf:c, sup:d}])));
-
 function printRange(range) {
 	var str = "";
 	for (var i = 0; i < range.length; i++)
@@ -47,19 +45,68 @@ function unionRange(r1, r2) {
 }
 
 // range - interval
-function complementRange(univ, intvl) {
+function complementInterval(univ, intvl, start) {
 	if (intvl === null) return univ;
+	if (start === undefined) start = 0;
 	var range = [];
-	for (var i = 0; i < univ.length; i++) {
+	var i;
+	for (i = start; i < univ.length; i++) {
 		if (withinInterval(intvl.inf, univ[i]))
 			range.push({inf:univ[i].inf, sup:intvl.inf});
-		if (withinInterval(intvl.sup, univ[i]))
+		if (withinInterval(intvl.sup, univ[i])) {
 			range.push({inf:intvl.sup, sup:univ[i].sup});
-		if (univ[i].sup < intvl.inf || univ[i].inf > intvl.sup)
+			break;
+		}
+		if (univ[i].sup < intvl.inf)
 			range.push(univ[i]);
+		if (univ[i].inf > intvl.sup) {
+			range.push(univ[i]);
+			if (i > 0) i--;
+			break;
+		}
 	}
+	range.start = i;
 	return range;
 }
+
+// function complementRange(univ, range) {
+// 	var compl = [];
+// 	var i = 0;
+// 	var j = 0;
+// 	while (i != univ.length) {
+// 		if (j == range.length) {
+// 			compl.push(univ[i++]);
+// 			continue;
+// 		}
+// 		var incr = 0;
+// 		if (withinInterval(range[j].inf, univ[i]))
+// 			compl.push({inf:univ[i].inf, sup:range[j].inf});
+// 		if (withinInterval(range[j].sup, univ[i])) {
+// 			compl.push({inf:range[j].sup, sup:univ[i].sup});
+// 			incr = 1;
+// 		}
+// 		if (univ[i].sup < range[j].inf) {
+// 			compl.push(univ[i]);
+// 			incr = 1;
+// 		}
+// 		if (univ[i].inf > range[j].sup)
+// 			compl.push(univ[i]);
+// 		i += incr;
+// 		j++;
+// 	}
+// 	for (var i = 0; i < compl.length; i++) console.log(compl[i]);
+// 	return compl;
+// }
+
+function complementRange(univ, range) {
+	var start = 0;
+	for (var i = 0; i < range.length; i++) {
+		univ = complementInterval(univ, range[i], start);
+		start = univ.start;
+	}
+	return univ;
+}
+
 
 // range ^ range
 function intersectionRange(r1, r2) {

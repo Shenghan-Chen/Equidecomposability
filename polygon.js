@@ -40,7 +40,7 @@ function triangularize(poly) {
 			var index = Math.floor(Math.random()*copy.length); //
 			var tri = [];
 			for (var i = -1; i < 2; i++)
-				tri.push(vec3.clone(copy[(index+i+l)%l]));
+				tri.push(vec3.clone(copy[(index+i+copy.length)%copy.length]));
 			triList.push(tri);
 			copy.splice(index, 1);
 		}

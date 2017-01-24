@@ -10,6 +10,7 @@ function sqrArea(tri) {
 	return vec3.sqrLen(BAxCA)/4;
 }
 
+// a, b, c correspond to 0, 1, 2
 function getSqrSide(tri, l) {
 	return vec3.sqrDist(tri[(l+1)%3],tri[(l+2)%3]);
 }
@@ -68,15 +69,17 @@ function indexAbsMin(list) {
 	return index;
 }
 
-// return {(n1, n2):|n1|+|n2|≤nSum}
+// return {(n1, n2):|n1|+|n2|=nSum}
 function absSumPairs(nSum) {
 	var n1 = 0;
 	var n2 = nSum;
+	var pairs = [];
 	while (n2 >= 0) {
-		var pairs = [{n1:n1, n2:n2}];
-		if (n1 != 0) pairs.push({n1:-n1, n2:n2});
-		if (n2 != 0) pairs.push({n1:n1, n2:-n2});
-		if (n1+n2 != 0) pairs.push({n1:-n1, n2:-n2});
+		pairs.push({n1:-n1, n2:-n2});
+		if (n1 != 0) pairs.push({n1:n1, n2:-n2});
+		if (n2 != 0) pairs.push({n1:-n1, n2:n2});
+		if (n1*n2 != 0) pairs.push({n1:n1, n2:n2});
+		
 		n1++;
 		n2--;
 	}

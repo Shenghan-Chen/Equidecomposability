@@ -3,7 +3,7 @@
 // is "if (null)" better in performance??
 
 // given polygon and stage of transformation(0≤t≤1), draw it on canvas
-function drawPoly(ctx, poly, t) {
+function drawPolygon(ctx, poly, t) {
 
     for (var i = 0; i < poly.length; i++) {
         var p = vec3.clone(poly[i]);
@@ -21,7 +21,7 @@ function drawPolyNH(ctx, poly, t) {
     for (var i = 0; i < poly.length; i++) {
         var p = vec3.clone(poly[i]);
         // vec3.transformMat4(p, p, poly.move);
-        if (t > 0) {
+        if (t > 0 && ('move' in poly)) {////
             // var center = vec3.clone(getCenter(poly));
             // vec3.transformMat4(center, getCenter(poly), poly.move);
             // vec3.sub(center, center, getCenter(poly));

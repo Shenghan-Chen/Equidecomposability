@@ -13,6 +13,7 @@
 <script src="polygon.js"></script>
 <script src="perform.js"></script>
 <script src="range.js"></script>
+<script src="pile.js"></script>
 
 </head>
 
@@ -31,13 +32,16 @@
 <h3>Equidecomposability</h3>
 <table>
 
-<tr><td><button type="button" onclick="selectTri1()">Draw Triangle 1</button></td></tr>
-<tr><td><button type="button" onclick="selectTri2()">Draw Triangle 2</button></td></tr>
-<tr><td><button type="button" onclick="doCut()">Do Cut</button></td></tr>
-<tr><td><button type="button" onclick="pause()">Pause/Start</button></td></tr>
-<tr><td><button type="button" onclick="testAnimate()">Auto Animation</button></td></tr>
-<tr><td><button type="button" onclick="reset()">Clear All</button></td></tr>
+<tr><td><button id = "poly1" type="button" onclick="selectPoly1()">Draw Source Polygon</button></td></tr>
+<tr><td><button id = "poly2" type="button" onclick="selectPoly2()">Draw Target Polygon</button></td></tr>
+<tr><td><button id = "cut" type="button" onclick="doCut()">Do Cut</button></td></tr>
+<tr><td><button id = "pause" type="button" onclick="pause()">Pause/Start</button></td></tr>
+<tr><td><button id = "auto" type="button" onclick="testAnimate()">Auto Animation</button></td></tr>
+<tr><td><button id = "clear" type="button" onclick="reset()">Clear All</button></td></tr>
 <!-- <tr><td><button type="button" onclick="test()">Test</button></td></tr> -->
+
+<tr><td><p></p></td></tr>
+<tr><td><p id = "prompt"></p></td></tr>
 
 </table>
 
@@ -46,6 +50,16 @@
 
 
 <script>
+
+    function changeButtonColor(id) {
+        var buttons = ["poly1", "poly2", "cut", "pause", "auto", "clear"];
+        for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i] == id) var color = "#87CEFA";
+            else var color = "#FFFFFF";
+            document.getElementById(buttons[i]).style.backgroundColor = color;
+        }
+    }
+
     var glcanvas = document.getElementById("GLCanvas1");
     glcanvas.addEventListener("contextmenu", function(e) {
         e.stopPropagation();
@@ -66,15 +80,14 @@
     glcanvas.makeClick = function(e) {
         var evt = (e == null ? event:e);
         var mousePos = this.getMousePos(evt);
-        if (this.select == -1) return; //
-        var tri = this.triangles[this.select];
-        if (tri.length < 3) { //the number can be relaxed
-            tri.push(vec3.fromValues(mousePos.X, mousePos.Y, 0));
-            requestAnimFrame(this.repaint);
-        }
-        else {
+        if (this.select == -1) {
+            document.getElementById("prompt").innerHTML = "Press a button to draw";
             console.log(mousePos.X+", "+mousePos.Y);
+            return;
         }
+        var poly = this.polygons[this.select];
+        poly.push(vec3.fromValues(mousePos.X, mousePos.Y, 0));
+        requestAnimFrame(this.repaint);
     }
     glcanvas.addEventListener('mousedown', glcanvas.makeClick);
     glcanvas.addEventListener('touchstart', glcanvas.makeClick);
@@ -85,15 +98,25 @@
         ctx.clearRect(0, 0, glcanvas.width, glcanvas.height);
 
         // if (glcanvas.debug) drawTest(ctx);// test.js
+        if (glcanvas.debug !== undefined) {
+            for (var i = 0; i < glcanvas.debug.length; i++) {
+                var p = glcanvas.debug[i];
+                var text = p[1];
+                p = p[0];
+                ctx.fillRect(p[0]-1, p[1]-1, 2, 2);
+                ctx.fillStyle = "#0000FF";
+                ctx.fillText(text, p[0], p[1]);
+            }
+        }
 
         // ctx.lineCap = 'round';
         // ctx.lineWidth = 2;
         for (var i = 0; i < 2; i++) {
-            var tri = glcanvas.triangles[i];
-            if (tri.length == 1)
-                ctx.fillRect(tri[0][0]-1, tri[0][1]-1, 2, 2);
+            var poly = glcanvas.polygons[i];
+            if (poly.length == 1)
+                ctx.fillRect(poly[0][0]-1, poly[0][1]-1, 2, 2);
             else 
-                drawPoly(ctx, [tri], 0);
+                drawPoly(ctx, [poly], 0);
         }
         if (glcanvas.cuts.length == 0) return;
         drawPoly(ctx, glcanvas.cuts, glcanvas.t);
@@ -110,25 +133,31 @@
 
     function pause() {
         if (glcanvas.paused) {
+            changeButtonColor();
             glcanvas.paused = 0;
             requestAnimFrame(glcanvas.repaint);
         }
-        else glcanvas.paused = 1;
+        else {
+            changeButtonColor("pause");
+            glcanvas.paused = 1;
+        }
     }
 
-    function selectTri1() {
+    function selectPoly1() {
+        changeButtonColor("poly1");
         glcanvas.select = 0;
     }
 
-    function selectTri2() {
+    function selectPoly2() {
+        changeButtonColor("poly2");
         glcanvas.select = 1;
     }
 
     function reset() {
+        changeButtonColor();
         glcanvas.paused = 0;
-        glcanvas.select = 0; //or -1??
-        glcanvas.triangles = [[],[]];
-        // glcanvas.debug = false;
+        glcanvas.select = -1;
+        glcanvas.polygons = [[],[]];
         // glcanvas.cuts1 = [];
         // glcanvas.cuts2 = [];
         glcanvas.cuts = [];
@@ -142,7 +171,7 @@
         for (var j = 0; j < 2; j++) {
             for (var i = 0; i < 3; i++) {
                 var p = vec3.fromValues((Math.random()*0.8+0.1+j)*400, (Math.random()*0.8+0.1)*300, 0);
-                glcanvas.triangles[j].push(p);
+                glcanvas.polygons[j].push(p);
             }
         }
         doCut();
@@ -150,14 +179,17 @@
     }
 
     function doCut() {
+        glcanvas.select = -1;
         //for testing only!
-        var tri1 = glcanvas.triangles[0];
-        var tri2 = glcanvas.triangles[1];
-        if (tri1.length < 3) return;
-        if (tri2.length == 3) {
-            //// console.log("initial: "+tri1[0]+" "+tri1[1]+" "+tri1[2]);
-            glcanvas.cuts = cutTri2Tri(tri1, tri2);
-        }
+        changeButtonColor();
+        var poly1 = glcanvas.polygons[0];
+        var poly2 = glcanvas.polygons[1];
+        if (poly1.length < 3 || poly2.length < 3) return;
+        // if (poly1.length == 3 && poly2.length == 3)
+        //     glcanvas.cuts = cutTri2Tri(poly1, poly2);
+        // else
+            glcanvas.cuts = cutPoly2Poly(poly1, poly2);
+            console.log("total # pieces: "+glcanvas.cuts.length);
         requestAnimFrame(glcanvas.repaint);
     }
 

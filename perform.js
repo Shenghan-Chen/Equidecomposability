@@ -11,7 +11,7 @@ function cutRec2Tri(cuts, rec, tri, n, inv) {
 	// (inv=f/t) poly.move: rec->gen1 / tgt1->gen2
 	rec2tri(cuts, rec, tri, inv);
 
-	if (n == 0) return;
+	if (n == 0) return cuts;
 	if (n > 0) {
 		vec3.scale(vCB, vCB, -1);
 		tri = [tri[0], tri[2], tri[1]];// swap B, C
@@ -33,6 +33,8 @@ function cutRec2Tri(cuts, rec, tri, n, inv) {
 		mat4.invert(inverse, cuts[i].move);
 		movePiece(cuts[i], inverse);
 	}
+
+	return cuts;////
 }
 
 // cut ABC in half from C, rotate AMC around M
@@ -66,8 +68,11 @@ function cutTri2Tri(tri1, tri2) {
 	tri2 = orientTri(tri2, o2.order);
 	var rec = createRec(w, S/w);
 	cuts.push(rec); //starting point of cuts
-	cutRec2Tri(cuts, rec, tri1, o1.offset, false);
-	cutRec2Tri(cuts, rec, tri2, o2.offset, true);
+	
+	var directed = clockDirection(tri1, tri2, rec);
+
+	cutRec2Tri(cuts, directed[0], tri1, o1.offset, false);
+	cutRec2Tri(cuts, directed[1], tri2, o2.offset, true);
 	console.log("total # pieces: "+cuts.length);
 	// for (var i = 0; i < cuts.length; i++) console.log("move: "+cuts[i].move[12]+" "+cuts[i].move[13]);
 	return cuts;

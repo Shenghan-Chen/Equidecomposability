@@ -5,6 +5,7 @@
 // Note: 'cuts' is modified
 function lineCutSameSide(cuts, P, Q, ignore, E) {
     var sameSide = [];
+    var oppoSide = [];
     for (var i = 0; i < cuts.length; i++) {
         if (ignore.indexOf(cuts[i]) != -1) continue;
         var lineCut = lineCutConvex(P, Q, cuts[i]);
@@ -12,14 +13,24 @@ function lineCutSameSide(cuts, P, Q, ignore, E) {
             cuts.splice(i, 1, lineCut[0], lineCut[1]);
             i++;
         }
-        if (lineSameSide(P, Q, lineCut[0], E))
+        if (lineSameSide(P, Q, lineCut[0], E)) {
             sameSide.push(lineCut[0]);
-        else if (lineCut.length == 2) sameSide.push(lineCut[1]);
+            if (lineCut.length == 2)
+                oppoSide.push(lineCut[1]);
+        }
+        else {
+            oppoSide.push(lineCut[0]);
+            if (lineCut.length == 2)
+                sameSide.push(lineCut[1]);
+            }
     }
+    sameSide.oppo = oppoSide;
+    // console.log("cuts: "+cuts.length+" same: "+sameSide.length+" oppo: "+oppoSide.length);
     return sameSide;
 }
 
 // assuming 'poly' not split by line PQ
+// Note: always false if E on PQ
 function lineSameSide(P, Q, poly, E) {
     var tmp = 0;
     var PQ = vec3.create();
@@ -35,6 +46,10 @@ function lineSameSide(P, Q, poly, E) {
         var prdct = vec3.dot(PQxPV, PQxPE);
         if (Math.abs(prdct) > Math.abs(tmp))// numerical precision check
             tmp = prdct;
+    }
+    if (Math.abs(tmp) < 1) {
+        console.log("small abs warning: "+tmp);
+        if (tmp==0) console.log("E on PQ");
     }
     return tmp > 0;
 }
@@ -64,6 +79,7 @@ function lineCutConvex(P, Q, poly) {
     }
     if (intxn.length < 2)
         return [poly];
+    // console.log("intxn ");console.log(intxn[0]);console.log(intxn[1]);
     var cut1 = createPiece(index[0], index[1], intxn[0], intxn[1], poly);
     var cut2 = createPiece(index[1], index[0], intxn[1], intxn[0], poly);
     return [cut1, cut2];
@@ -89,6 +105,23 @@ function createPiece(indexA, indexB, intxnA, intxnB, parent) {
 // s(ABxCD)=ACxCD, intxn = A + sAB (0 ≤ s ≤ 1)
 // Note: intxn not cloned so that it could be compared using ===
 function lineIntersection(A, B, C, D) {
+    ////debugging: sanity check
+    if (vec3.equals(A, C) && !vec3.exactEquals(A, C)) {
+        console.log("A=C");
+        vec3.copy(A, C);
+    }
+    if (vec3.equals(A, D) && !vec3.exactEquals(A, D)) {
+        console.log("A=D");
+        vec3.copy(A, D);
+    }
+    if (vec3.equals(B, C) && !vec3.exactEquals(B, C)) {
+        console.log("B=C");
+        vec3.copy(B, C);
+    }
+    if (vec3.equals(B, D) && !vec3.exactEquals(B, D)) {
+        console.log("B=D");
+        vec3.copy(B, D);
+    }
     if (vec3.equals(A, C) || vec3.equals(A, D)) return A;
     if (vec3.equals(B, C) || vec3.equals(B, D)) return B;
     var zero = vec3.create();

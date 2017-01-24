@@ -9,6 +9,9 @@ function wInTri(tri, w) {
 	var nList = [];
 	var total = 3;
 	var fail = failRange(tri);
+
+	// for (var i = 0; i < 6; i++) console.log(printRange(getRange(tri, i, 0)));
+
 	for (var i = 0; i < fail.length; i++) {
 		if (w > fail[i].inf && w < fail[i].sup)
 			total -= 1;
@@ -16,20 +19,20 @@ function wInTri(tri, w) {
 	var minIndex = 0;
 	for (var i = 0; i < total; i++) {
 		var s2 = getSqrSide(tri, i);
-		var del = w*w - sqrArea(tri)/s2;////
-		if (del < 0) {
-			////
-			// console.log(i+"-th h/2="+Math.sqrt(sqrArea(tri)/s2)+" w="+w+" del="+del);
+		if (w < Math.sqrt(sqrArea(tri)/s2)) {
+			var del = w*w - sqrArea(tri)/s2;
+			console.log(i+"-th h/2="+Math.sqrt(sqrArea(tri)/s2)+" w="+w+" del="+del);
 			// console.log("area="+Math.sqrt(sqrArea(tri))+" s="+Math.sqrt(s2));
 			minIndex += 2;
 			continue; //ABC,ACB taller than BAC,BCA
 		}
-		var x = Math.sqrt(del/s2)*2;
+		var x = Math.sqrt((w*w - sqrArea(tri)/s2)/s2)*2;
 		nList.push(kDist(getK(tri, 2 * i), x));
 		nList.push(kDist(getK(tri, 2*i+1), x));
 	}
-	// if (nList.length == 0) console.log("failed w="+w);triInfo(tri);return null;
+	if (nList.length == 0) {console.log("failed w="+w);triInfo(tri);return null;}
 	minIndex += indexAbsMin(nList);
+	// console.log("order="+minIndex);
 	// if (!withinRange(w, getRange(tri, minIndex, nList[indexAbsMin(nList)]))) console.log("out of luck");
 	return {order:minIndex, offset:nList[indexAbsMin(nList)]};
 }
@@ -41,10 +44,13 @@ function findRange(tri1, tri2) {
 		var pairs = absSumPairs(nSum);
 		for (var i = 0; i < pairs.length; i++) {
 			var common = commonRange(tri1, pairs[i].n1, tri2, pairs[i].n2);
-			if (common.length > 0) return pickFromRange(common);
+			if (common.length > 0) {
+				console.log("n1="+pairs[i].n1+" n2="+pairs[i].n2);////
+				return pickFromRange(common);//// return n?
+			}
 		}
 		nSum++;
-		//// TODO
+		//// TODO: calculate distance?
 	}
 }
 
@@ -62,13 +68,28 @@ function totalRange(tri, n) {
 		var r2 = getRange(tri, 2*j+1, n);
 		var cmbn = unionRange(r1, r2);
 		if (2-j < fail.length)
-			cmbn = complementRange(cmbn, fail[2-j]);
+			cmbn = complementInterval(cmbn, fail[2-j]);
 		range = unionRange(cmbn, range);
 	}
 	return range;
 }
 
+function possibleRange(tri) {
+	var fail = failRange(tri);// oriented here
+	var range = [];
+	for (var j = 0; j < 3; j++) {
+		var halfH = Math.sqrt(sqrArea(tri)/getSqrSide(tri, j));
+
+		var possible = [{inf:halfH, sup:Infinity}];
+		if (2-j < fail.length)
+			possible = complementInterval(possible, fail[2-j]);
+		range = unionRange(possible, range);
+	}
+	return range;
+}
+
 // return achievable range for specified order and offset
+// TODO: validate this
 function getRange(tri, index, n) {
 	var k = getK(tri, index) + n;
 	if (k < -1) return [];
@@ -77,16 +98,12 @@ function getRange(tri, index, n) {
 	var bSqr = getSqrSide(tri, 1);
 	var cSqr = getSqrSide(tri, 2);
 
-	var s = Math.sqrt(bSqr)/2;
-	// console.log(s+" s "+Math.sqrt(aSqr*k*k/4+getArea(tri)*getArea(tri)/aSqr));
-	s = Math.sqrt(aSqr*k*k/4+getArea(tri)*getArea(tri)/aSqr);
-	var l = Math.sqrt(aSqr/2+bSqr/2-cSqr/4);
-	// console.log(l+" l "+Math.sqrt(aSqr*(k+1)*(k+1)/4+getArea(tri)*getArea(tri)/aSqr));
-	l = Math.sqrt(aSqr*(k+1)*(k+1)/4+getArea(tri)*getArea(tri)/aSqr);
-	if (k < 0) {
-		if (s > l) l = s;
-		s = Math.sqrt(sqrArea(tri)/aSqr);
-	}
+	var l = Math.sqrt(aSqr*(k+1)*(k+1)/4+sqrArea(tri)/aSqr);
+	if (k < 0) k = 0;
+	var s = Math.sqrt(aSqr*k*k/4+sqrArea(tri)/aSqr);
+
+	// s = Math.sqrt(bSqr)/2;
+	// l = Math.sqrt(aSqr/2+bSqr/2-cSqr/4);
 	return [{inf:s, sup:l}];
 }
 
@@ -127,4 +144,7 @@ function triInfo(tri, label) {
 	for (var i = 0; i < 6; i++)
 		console.log(printRange(getRange(tri, i, 0)));
 	console.log("fail ranges: "+printRange(failRange(tri)));
+	console.log("total ranges: ");
+	for (var i = -10; i < 10; i++)
+		console.log(i+" "+printRange(totalRange(tri, i)));
 }
