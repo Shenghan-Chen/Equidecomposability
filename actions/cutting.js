@@ -47,9 +47,10 @@ function lineSameSide(P, Q, poly, E) {
             tmp = prdct;
     }
     // debugging
-    if (Math.abs(tmp) < 1) {
-        console.log("small abs warning: "+tmp);
-        if (tmp==0) console.log("E on PQ");
+    if (Math.abs(tmp) < 0.1 && tmp != 0) console.log("small abs warning: "+tmp);
+    if (vec3.equals(P, E) || vec3.equals(Q, E)) {
+        if (tmp != 0) console.log("E on PQ but tmp= "+tmp);
+        return false;
     }
     return tmp > 0;
 }
@@ -81,6 +82,15 @@ function lineCutConvex(P, Q, poly) {
         return [poly];
     var cut1 = createPiece(index[0], index[1], intxn[0], intxn[1], poly);
     var cut2 = createPiece(index[1], index[0], intxn[1], intxn[0], poly);
+
+    if (getArea(cut1) == 0 || getArea(cut2) == 0) {
+        if (!('debug' in glcanvas)) glcanvas.debug = [];
+        for (var i = 0; i < poly.length; i++)
+            glcanvas.debug.push(poly[i]);
+        P.label = "P";Q.label = "Q";
+        glcanvas.debug.push(P);
+        glcanvas.debug.push(Q);
+    }
     return [cut1, cut2];
 }
 
@@ -105,22 +115,22 @@ function createPiece(indexA, indexB, intxnA, intxnB, parent) {
 // Note: intxn not cloned so that it could be compared using ===
 function lineIntersection(A, B, C, D) {
     ////debugging: sanity check
-    if (vec3.equals(A, C) && !vec3.exactEquals(A, C)) {
-        console.log("A=C");
-        vec3.copy(A, C);
-    }
-    if (vec3.equals(A, D) && !vec3.exactEquals(A, D)) {
-        console.log("A=D");
-        vec3.copy(A, D);
-    }
-    if (vec3.equals(B, C) && !vec3.exactEquals(B, C)) {
-        console.log("B=C");
-        vec3.copy(B, C);
-    }
-    if (vec3.equals(B, D) && !vec3.exactEquals(B, D)) {
-        console.log("B=D");
-        vec3.copy(B, D);
-    }
+    // if (vec3.equals(A, C) && !vec3.exactEquals(A, C)) {
+    //     console.log("A=C");
+    //     vec3.copy(A, C);
+    // }
+    // if (vec3.equals(A, D) && !vec3.exactEquals(A, D)) {
+    //     console.log("A=D");
+    //     vec3.copy(A, D);
+    // }
+    // if (vec3.equals(B, C) && !vec3.exactEquals(B, C)) {
+    //     console.log("B=C");
+    //     vec3.copy(B, C);
+    // }
+    // if (vec3.equals(B, D) && !vec3.exactEquals(B, D)) {
+    //     console.log("B=D");
+    //     vec3.copy(B, D);
+    // }
     if (vec3.equals(A, C) || vec3.equals(A, D)) return A;
     if (vec3.equals(B, C) || vec3.equals(B, D)) return B;
     var zero = vec3.create();

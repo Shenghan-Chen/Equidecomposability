@@ -11,6 +11,7 @@ function cutPoly2Poly(poly1, poly2) {
 	console.log("w="+w);
 
 	var B = vec3.create();
+	B = vec3.fromValues(800, 600, 0);//
 	for (var i = 0; i < triList1.length; i++) {
 		var tri = triList1[i];
 		var oo = wInTri(tri, w);
@@ -81,19 +82,20 @@ function overlapRange(triList) {
 			//// temporary; fix compl()
 			for (var j = 0; j < common.length; j++) {
 				if (common[j].inf!=common[j].sup) {
-					console.log((i+1)+" overlap out of "+total.length);
+					// console.log((i+1)+" overlap out of "+total.length);
+					if (i == 0) console.log("no common range");
 					return common;
 				}
 			}
 		}
 	}
-	console.log("empty overlap");
+	console.log("attention: empty overlap");
 	for (var i = 0; i < triList.length; i++) {
 		var tri = triList[i];
 		console.log("total: "+totalRange(tri, 0));
 		console.log("possible: "+possibleRange(tri));
 	}
-	possible = intersectionRange({inf:0, sup:possible[possible.length-1].inf}, possible);
+	possible = intersectionRange([{inf:0, sup:possible[possible.length-1].inf}], possible);
 	console.log(possible);
 	return possible;
 }

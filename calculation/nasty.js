@@ -16,15 +16,22 @@ function wInTri(tri, w) {
 	var minIndex = 0;
 	for (var i = 0; i < total; i++) {
 		var s2 = getSqrSide(tri, i);
-		if (w < Math.sqrt(sqrArea(tri)/s2)) {
-			// debugging
-			var del = w*w - sqrArea(tri)/s2;
-			if (del > -1)
-				console.log(i+"-th h/2="+Math.sqrt(sqrArea(tri)/s2)+" w="+w+" del="+del);
-			minIndex += 2;
-			continue; //ABC,ACB taller than BAC,BCA
+		var halfH = Math.sqrt(sqrArea(tri)/s2);
+		var del = w*w - sqrArea(tri)/s2;
+		// numerical precision handling
+		if (Math.abs(del) < 0.1 && halfH != w) {
+			console.log(i+"-th h/2="+halfH+" w="+w+" del="+del);
+			if (halfH != w) console.log("WANRNING: halfH != w\nk = "+getK(tri, 2*i));// debugging
 		}
-		var x = Math.sqrt((w*w - sqrArea(tri)/s2)/s2)*2;////still possibly negative
+
+		if (w == halfH)
+			var x = 0;
+		else if (w < halfH) {
+			minIndex += 2;
+			continue;// ABC,ACB taller than BAC,BCA
+		}
+		else
+			var x = Math.sqrt(del/s2)*2;
 		nList.push(kDist(getK(tri, 2 * i), x));
 		nList.push(kDist(getK(tri, 2*i+1), x));
 	}

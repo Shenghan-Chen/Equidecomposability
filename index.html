@@ -108,8 +108,8 @@
         if (glcanvas.debug !== undefined) {
             for (var i = 0; i < glcanvas.debug.length; i++) {
                 var p = glcanvas.debug[i];
-                var text = p[1];
-                p = p[0];
+                var text = i;
+                if (p.label != undefined) text = p.label;
                 ctx.fillRect(p[0]-1, p[1]-1, 2, 2);
                 ctx.fillStyle = "#0000FF";
                 ctx.fillText(text, p[0], p[1]);
@@ -170,14 +170,46 @@
         glcanvas.getContext("2d").clearRect(0, 0, glcanvas.width, glcanvas.height);
     }
 
-    // Currently for testing
+
+    // courtesy of    en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain#JavaScript
+    function convexHull(points) {
+        function cross(o, a, b) {
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+        }
+        points.sort(function(a, b) {
+            return a[0] == b[0] ? a[1] - b[1] : a[0] - b[0];
+        });
+
+        var lower = [];
+        for (var i = 0; i < points.length; i++) {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) {
+                lower.pop();
+            }
+            lower.push(points[i]);
+        }
+
+        var upper = [];
+        for (var i = points.length - 1; i >= 0; i--) {
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) {
+                upper.pop();
+            }
+            upper.push(points[i]);
+        }
+
+        upper.pop();
+        lower.pop();
+        return lower.concat(upper);
+    }
+
     function testAnimate() {
         reset();
         for (var j = 0; j < 2; j++) {
-            for (var i = 0; i < 3; i++) {
+            var l = Math.floor(Math.random()*6) + 3;// triangle to octagon
+            for (var i = 0; i < l; i++) {
                 var p = vec3.fromValues((Math.random()*0.8+0.1+j)*400, (Math.random()*0.8+0.1)*300, 0);
                 glcanvas.polygons[j].push(p);
             }
+            glcanvas.polygons[j] = convexHull(glcanvas.polygons[j]);
         }
         doCut();
         // requestAnimFrame(glcanvas.repaint); //may need to change/separate repaint(); re-animate?
@@ -192,8 +224,13 @@
         // if (poly1.length == 3 && poly2.length == 3)
         //     glcanvas.cuts = cutTri2Tri(poly1, poly2);
         // else
+            console.log(poly1.length+"-gon to "+poly2.length+"-gon");
             glcanvas.cuts = cutPoly2Poly(poly1, poly2);
             console.log("total # pieces: "+glcanvas.cuts.length);
+            for (var i = 0; i < glcanvas.cuts.length; i++) {
+                var area = getArea(glcanvas.cuts[i]);
+                if (area < 0.1) console.log(area);
+            }
         requestAnimFrame(glcanvas.repaint);
     }
 

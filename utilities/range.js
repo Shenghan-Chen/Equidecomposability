@@ -116,7 +116,8 @@ function withinInterval(x, intvl) {
 function pickFromRange(range) {
 	if (range.length != 0) {
 		var index = Math.floor(Math.random()*range.length);
-		return range[index].inf+(range[index].sup-range[index].inf)*Math.random();
+		return range[0].inf;
+		// return range[index].inf+(range[index].sup-range[index].inf)*Math.random();
 		// return range[index].sup+(range[index].inf-range[index].sup)*Math.random();
 	}
 }

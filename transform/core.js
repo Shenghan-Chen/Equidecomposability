@@ -16,6 +16,19 @@ function xyz2abcd(cuts, rec, tri, inv) {
 	var p = getPoints(X, Y, Z, A, B, C, D);
 	var E = p.E, F = p.F, L = p.L, M = p.M, N = p.N;
 
+	if (vec3.equals(M, E)) console.log("M=E");//
+	if (vec3.equals(M, L)) console.log("M=L");
+	if (vec3.equals(N, B)) console.log("N=B");//
+	if (vec3.equals(L, D)) console.log("L=D");//
+	if (vec3.equals(L, A)) console.log("L=A");//
+	if (vec3.equals(N, C)) console.log("N=C");//
+	if (vec3.equals(N, B) != vec3.equals(L, D)) {
+		console.log("w=sup unstable");console.log(N);console.log(B);console.log(L);console.log(D);
+	}
+	if (vec3.equals(N, C) != vec3.equals(L, A)) {
+		console.log("w=h/2 unstable");console.log(N);console.log(C);console.log(L);console.log(A);
+	}
+
 // generate pieces within each quadrilateral or triangle
 	var AEL = lineCutSameSide(cuts, E, L, A);
 	var DFML = lineCutSameSide(AEL.oppo, F, M, D);
@@ -42,7 +55,7 @@ function xyz2abcd(cuts, rec, tri, inv) {
 	chainMove(BEMN, ctrSymm2D(N));
 
 // move resulting tri to match original XYZ
-	chainMove(cuts, triCoincide(cuts, X, Y, Z, M, N, F));
+	chainMove(cuts, triCoincide(cuts, M, N, F, X, Y, Z));
 	return cuts;
 }
 
@@ -57,9 +70,18 @@ function getPoints(X, Y, Z, A, B, C, D) {
 	vec3.scale(E, E, 0.5);
 	var F = vec3.create(); //CD midpoint
 	vec3.add(F, E, W);
-
+	
+	// numerical precision handling
+	var h = vec3.create();
+	vec3.sub(h, A, B);
+	vec3.scaleAndAdd(h, B, h, vec3.dist(Z, Y)/vec3.len(h));
+	if (vec3.dist(A, h) != 0 && vec3.dist(A, h) < 0.1)// debugging
+		console.log(A+"\n"+h+"\ndist= "+vec3.dist(A, h)+"\nequal? "+vec3.equals(A, h));
+	if (vec3.equals(A, h))
+		var l = 0;// A = L
+	else
+		var l = Math.sqrt(vec3.sqrDist(Z, Y) - vec3.sqrDist(A, B))/2;
 	// TODO: generalize using cos for parallelogram?
-	var l = Math.sqrt(vec3.sqrDist(Z, Y) - vec3.sqrDist(A, B))/2;
 	var L = vec3.create();
 	vec3.normalize(L, W);
 	vec3.scaleAndAdd(L, A, L, l);
@@ -89,49 +111,42 @@ function getPoints(X, Y, Z, A, B, C, D) {
 }
 
 
-
+// return mat4 that matches NMF with YXZ
 // to be called in rec2tri, to match resulting tri with original XYZ:
 // translate -vM, rotate MF to XZ, rotate MN to XY, translate vX (generalized to 3D)
-function triCoincide(cuts, X, Y, Z, M, N, F) {
-	var vYX = vec3.create();
-	var vYZ = vec3.create();
-	var vXZ = vec3.create();
+function triCoincide(cuts, M, N, F, X, Y, Z) {
 	var vMF = vec3.create();
 	var vMN = vec3.create();
-	var vFN = vec3.create();
-
-	vec3.sub(vYX, X, Y);
-	vec3.sub(vYZ, Z, Y);
-	vec3.sub(vXZ, Z, X);
-	vec3.sub(vMF, F, M);
-	// vec3.sub(vMN, N, M);
-	// vec3.sub(vFN, N, F);
+	var vXZ = vec3.create();
+	var vXY = vec3.create();
 	
-	// var nMF = vec3.create();
-	// var nXZ = vec3.create();
-	// vec3.cross(nMF, vMN, vFN);
-	// vec3.cross(nMF, nMF, vMF);
-	// vec3.cross(nXZ, vYX, vYZ);
-	// vec3.cross(nXZ, nXZ, vXZ);
+	vec3.sub(vMF, F, M);
+	vec3.sub(vMN, N, M);
+	vec3.sub(vXZ, Z, X);
+	vec3.sub(vXY, Y, X);
+	
+	var nMF = vec3.create();
+	var nXZ = vec3.create();
+	vec3.cross(nMF, vMF, vMN);
+	vec3.cross(nXZ, vXZ, vXY);
 	vec3.normalize(vMF, vMF);
 	vec3.normalize(vXZ, vXZ);
-	// vec3.normalize(nMF, nMF);
-	// vec3.normalize(nXZ, nXZ);
+	vec3.normalize(nMF, nMF);
+	vec3.normalize(nXZ, nXZ);
 	var r1 = quat.create();
-	// var r2 = quat.create();
-	// var r0 = quat.create();
-	// var rotate = mat4.create();
+	var r2 = quat.create();
+	var r0 = quat.create();
 	quat.rotationTo(r1, vMF, vXZ);
-	// quat.rotationTo(r2, nMF, nXZ);
-	// quat.mul(r0, r1, r2);
-	// mat4.fromQuat(rotate, r0);
+	quat.rotationTo(r2, nMF, nXZ);
+	console.log(r2);//// not tested yet
+	quat.mul(r0, r1, r2);
 
 	var vM = vec3.create();
 	var transl = mat4.create();
 	var move = mat4.create();
 	vec3.scale(vM, M, -1);
 	mat4.fromTranslation(transl, vM);
-	mat4.fromRotationTranslation(move, r1, X);
+	mat4.fromRotationTranslation(move, r0, X);
 	mat4.mul(move, move, transl);
 	return move;
 }

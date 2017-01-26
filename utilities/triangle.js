@@ -18,6 +18,7 @@ function sqrArea(tri) {
 	vec3.sub(vBA, tri[0], tri[1]);
 	vec3.sub(vCA, tri[0], tri[2]);
 	vec3.cross(BAxCA, vBA, vCA);
+    if (vec3.equals(BAxCA, vec3.create())) return 0;// numerical precision tuning
 	return vec3.sqrLen(BAxCA)/4;
 }
 
