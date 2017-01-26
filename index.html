@@ -22,6 +22,9 @@
 <script src="utilities/range.js"></script>
 <script src="utilities/helper.js"></script>
 
+<!-- temp -->
+<script src="temp.js"></script>
+
 </head>
 
 
@@ -49,6 +52,7 @@
 
 <tr><td><p></p></td></tr>
 <tr><td><p id = "prompt"></p></td></tr>
+<tr><td><p>Press Auto Animation to generate random convex polygons</p></td></tr>
 
 </table>
 
@@ -88,7 +92,7 @@
         var evt = (e == null ? event:e);
         var mousePos = this.getMousePos(evt);
         if (this.select == -1) {
-            document.getElementById("prompt").innerHTML = "Press a button to draw";
+            document.getElementById("prompt").innerHTML = "Press a button to draw convex polygons";
             console.log(mousePos.X+", "+mousePos.Y);
             return;
         }
@@ -103,18 +107,7 @@
     glcanvas.repaint = function() {
         var ctx = glcanvas.getContext("2d");
         ctx.clearRect(0, 0, glcanvas.width, glcanvas.height);
-
-        // if (glcanvas.debug) drawTest(ctx);// test.js
-        if (glcanvas.debug !== undefined) {
-            for (var i = 0; i < glcanvas.debug.length; i++) {
-                var p = glcanvas.debug[i];
-                var text = i;
-                if (p.label != undefined) text = p.label;
-                ctx.fillRect(p[0]-1, p[1]-1, 2, 2);
-                ctx.fillStyle = "#0000FF";
-                ctx.fillText(text, p[0], p[1]);
-            }
-        }
+        
 
         // ctx.lineCap = 'round';
         // ctx.lineWidth = 2;
@@ -227,10 +220,6 @@
             console.log(poly1.length+"-gon to "+poly2.length+"-gon");
             glcanvas.cuts = cutPoly2Poly(poly1, poly2);
             console.log("total # pieces: "+glcanvas.cuts.length);
-            for (var i = 0; i < glcanvas.cuts.length; i++) {
-                var area = getArea(glcanvas.cuts[i]);
-                if (area < 0.1) console.log(area);
-            }
         requestAnimFrame(glcanvas.repaint);
     }
 

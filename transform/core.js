@@ -138,7 +138,7 @@ function triCoincide(cuts, M, N, F, X, Y, Z) {
 	var r0 = quat.create();
 	quat.rotationTo(r1, vMF, vXZ);
 	quat.rotationTo(r2, nMF, nXZ);
-	console.log(r2);//// not tested yet
+	// console.log(r2);//// not tested yet
 	quat.mul(r0, r1, r2);
 
 	var vM = vec3.create();
